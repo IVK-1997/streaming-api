@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +7,6 @@ import json
 
 app = FastAPI()
 
-# Enable CORS for browser-based graders
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -23,37 +21,33 @@ class StreamRequest(BaseModel):
 
 
 def generate_essay():
+    # Remove all newlines to avoid SSE parser issues
     return (
         "Artificial intelligence has become one of the most transformative "
         "technologies of the twenty-first century. As AI systems grow more capable, "
         "ethical considerations surrounding their development and deployment become "
         "increasingly urgent. AI ethics is concerned with ensuring that intelligent "
         "systems are designed in ways that promote fairness, accountability, "
-        "transparency, and human well-being.\n\n"
-
+        "transparency, and human well-being. "
         "One major ethical concern is bias. AI systems are trained on data, and if "
         "that data reflects historical inequalities or prejudices, the system may "
         "replicate or even amplify those biases. This can result in unfair treatment "
         "in areas such as hiring, lending, healthcare, and criminal justice. "
         "Developers must therefore prioritize diverse datasets and implement bias "
-        "detection mechanisms to reduce discriminatory outcomes.\n\n"
-
+        "detection mechanisms to reduce discriminatory outcomes. "
         "Another important issue is privacy. AI systems often rely on massive amounts "
         "of personal data. Without proper safeguards, individuals may lose control "
         "over their information. Ethical AI development requires strong data "
         "protection policies, encryption standards, and transparency about how data "
-        "is collected and used.\n\n"
-
+        "is collected and used. "
         "Accountability is equally critical. When AI systems make decisions, it must "
         "be clear who is responsible for those outcomes. Organizations deploying AI "
         "should maintain audit trails and provide explanations for automated "
-        "decisions to ensure trust and regulatory compliance.\n\n"
-
+        "decisions to ensure trust and regulatory compliance. "
         "Finally, there is the broader societal impact. As automation increases, "
         "concerns arise about job displacement and economic inequality. Ethical AI "
         "policy must include strategies for workforce transition, education, and "
-        "inclusive growth to prevent widening social gaps.\n\n"
-
+        "inclusive growth to prevent widening social gaps. "
         "In conclusion, AI ethics is not optional but essential. By embedding "
         "fairness, transparency, accountability, and human-centered values into AI "
         "systems, society can harness technological progress while minimizing harm. "
@@ -64,14 +58,16 @@ def generate_essay():
 
 async def stream_generator():
     essay = generate_essay()
-    words = essay.split(" ")
+    chunk_size = 50  # fixed size chunks
 
-    for word in words:
+    for i in range(0, len(essay), chunk_size):
+        chunk = essay[i:i + chunk_size]
+
         payload = {
             "choices": [
                 {
                     "delta": {
-                        "content": word + " "
+                        "content": chunk
                     }
                 }
             ]
